@@ -9,7 +9,6 @@ const twitter = require("twitter"),
     app = express();
 
 const Twitter = new twitter(appConfig);
-var totalScore = 0;
 
 mongoose.connect(dbConfig.DATABASE, function(err) {
     if (err) {
@@ -25,7 +24,7 @@ mongoose.connect(dbConfig.DATABASE, function(err) {
 Twitter.stream('statuses/filter', { track: 'donald trump, president trump, president donald trump', language: "en" }, function(stream) {
     stream.on('data', function(event) {
         var sentimentScore = sentimentAnalysis.analyzeText(event.text);
-        // console.log(sentimentScore);
+        console.log(sentimentScore);
 
         let tweet = new Tweet({
             userName: "@" + event.user.screen_name,
@@ -35,9 +34,6 @@ Twitter.stream('statuses/filter', { track: 'donald trump, president trump, presi
             link: "http://twitter.com/" + event.user.screen_name + "/status/" + event.id_str,
             comparative: sentimentScore.comparative
         });
-
-        this.totalScore += sentimentScore.score;
-        console.log(totalScore);
 
         tweet.save(function(err, tweet) {
             if (err) {
