@@ -5,7 +5,7 @@ const twitter = require("twitter"),
     express = require("express"),
     sentimentAnalysis = require("./controllers/sentiment"),
     Tweet = require("./models/tweet"),
-    //runTweet = require("./controllers/runTweet"),
+    confidenceOfTweets = require("./controllers/confidenceOfTweets"),
     app = express();
 
 const Twitter = new twitter(appConfig);
@@ -21,30 +21,25 @@ mongoose.connect(dbConfig.DATABASE, function(err) {
 
 
 // You can also get the stream in a callback if you prefer.
-Twitter.stream('statuses/filter', { track: 'bath bomb, bath bombs, lush bath bomb, body scrub, soap bar, soap, bubble bath, hex bomb, bath scrub, organic', language: "en" }, function(stream) {
+Twitter.stream('statuses/filter', { track: 'trump, president trump, president', language: "en" }, function(stream) {
     stream.on('data', function(event) {
-        if (event.user.screen_name != "sudzlysoaps") {
-            var sentimentScore = sentimentAnalysis.analyzeText(event.text);
-            var retweeted = false;
-            if (event.retweeted_status) {
-                retweeted = true;
-            }
-            let tweet = new Tweet({
-                userName: "@" + event.user.screen_name,
-                message: event.text,
-                messageID: event.id_str,
-                score: sentimentScore.score,
-                retweet: retweeted,
-                link: "http://twitter.com/" + event.user.screen_name + "/status/" + event.id_str,
-                comparative: sentimentScore.comparative
-            });
+        var sentimentScore = sentimentAnalysis.analyzeText(event.text);
+        console.log(sentimentScore);
 
-            tweet.save(function(err, tweet) {
-                if (err) {
-                    console.log(err);
-                }
-            });
-        }
+        let tweet = new Tweet({
+            userName: "@" + event.user.screen_name,
+            message: event.text,
+            messageID: event.id_str,
+            score: sentimentScore.score,
+            link: "http://twitter.com/" + event.user.screen_name + "/status/" + event.id_str,
+            comparative: sentimentScore.comparative
+        });
+
+        tweet.save(function(err, tweet) {
+            if (err) {
+                console.log(err);
+            }
+        });
     });
 
     stream.on('error', function(error) {

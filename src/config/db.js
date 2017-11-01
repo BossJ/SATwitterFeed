@@ -1,5 +1,3 @@
-require('dotenv').config()
-
 module.exports = {
-    DATABASE: process.env.DATABASE_TWIT
+    DATABASE: "mongodb://test:test123@ds241025.mlab.com:41025/polisents"
 }
